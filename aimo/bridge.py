@@ -31,9 +31,7 @@ class ApiAimoBridge(ApiAimoFacade):
     def __init__(self, model):
         self.model = model
 
-    def __objs_to_list(self, obj):
-        items = [item.__dict__['_data'] for item in obj]
-        return items
+
 
     @property
     def all(self):
@@ -42,14 +40,12 @@ class ApiAimoBridge(ApiAimoFacade):
     @all.getter
     def all(self) -> list:
         all = self.model.select()
-        all_data = self.__objs_to_list(all)
-        return all_data
+        return all
 
     def ids_item(self, values: List[int]):
         model = self.model
         items = model.select().where(model.id << values)
-        all_data = self.__objs_to_list(items)
-        return all_data
+        return items
 
     @property
     def last(self):
@@ -59,7 +55,7 @@ class ApiAimoBridge(ApiAimoFacade):
     def last(self):
         try:
             last = self.model.select().order_by(self.model.id.desc()).get()
-            return last.__dict__['_data']
+            return last
         except self.model.DoesNotExist:
             return []
         except Exception as e:
