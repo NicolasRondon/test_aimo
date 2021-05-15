@@ -3,6 +3,8 @@ from typing import List
 
 from peewee import fn
 
+from utils import make_password
+
 
 class ApiAimoFacade(metaclass=abc.ABCMeta):
 
@@ -13,6 +15,15 @@ class ApiAimoFacade(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def all(self):
         pass
+
+    @abc.abstractmethod
+    def last(self):
+        pass
+
+    @abc.abstractmethod
+    def create(self, data):
+        pass
+
 
 
 class ApiAimoBridge(ApiAimoFacade):
@@ -54,3 +65,20 @@ class ApiAimoBridge(ApiAimoFacade):
         except Exception as e:
             raise e
 
+    def create(self, data):
+        try:
+            if 'password' in data:
+                data['password']= make_password(data['password'])
+            model = self.model(**data)
+            model.save()
+            return model
+        except Exception as e:
+            raise e
+
+    def create_bulk(self,data):
+        database = self.model.__dict__["_meta"].__dict__['database']
+        with database.atomic():
+            for data_dict in data:
+                if 'password' in data_dict:
+                    data_dict['password'] = make_password(data_dict['password'])
+                self.model.create(**data_dict)
