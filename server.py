@@ -1,19 +1,11 @@
-# # Run with "python server.py"
-#
-# from bottle import run
-#
-# # Start your code here, good luck (: ...
-#
-#
-#
-#
 from bottle import Bottle, run, route, request, hook, response, post
 from peewee import IntegrityError
 
 from aimo.bridge import ApiAimoBridge
 from connectors.sqlite import db_sqlite
-from models.users import User
+from models.users import User, UserToken
 from serializers.users import UserSchema
+from utils import check_password
 
 _allow_origin = '*'
 _allow_methods = 'PUT, GET, POST, DELETE, OPTIONS'
@@ -61,9 +53,51 @@ def create_users():
             return {"error": "There is User with same username"}
     except Exception as e:
         raise e
-    # user = ApiAimoBridge(User)
-    # serializer = UserSchema().load({"name": "John", "email": "foo"})
-    # new_user = user.create()
+
+
+@post('/api/v1/users/login')
+def login_user():
+    try:
+        data = request.json
+        serializer = UserSchema().load(data)
+
+        if serializer.errors:
+            response.status = 400
+            return {"error": serializer.errors}
+
+        try:
+            user_token = ApiAimoBridge(UserToken)
+            try:
+                username = serializer.data['username']
+                password_raw = serializer.data['password']
+                user = User.get(User.username == username)
+                user_id = user.id
+                user_pasword = user.password
+                is_password_correct = check_password(password_raw, user_pasword)
+                if is_password_correct:
+                    #TODO creacion del token
+                    user_token.create()
+                else:
+                    response.status = 400
+                    return {"error": "The credentials are not valid"}
+
+            except  Exception as e:
+                raise e
+
+            password = serializer.data['password']
+        except Exception as e:
+            raise e
+        # try:
+        #     user = ApiAimoBridge(User)
+        #     new_user = user.create(serializer.data)
+        #     new_user = UserSchema(only=("username",)).dump(new_user)
+        #     return {"user": new_user.data}
+        #
+        # except IntegrityError:
+        #     response.status = 400
+        #     return {"error": "There is User with same username"}
+    except Exception as e:
+        raise e
 
 
 run(host='localhost', port=8000)
