@@ -1,10 +1,7 @@
 from datetime import datetime
 import peewee as orm
 
-from aimo.bridge import ApiAimoBridge
 from connectors.sqlite import db_sqlite
-from serializers.users import UserSerializer
-from utils import make_password
 
 
 class User(orm.Model):
@@ -19,12 +16,7 @@ class User(orm.Model):
 class UserToken(orm.Model):
     user = orm.ForeignKeyField(User)
     token = orm.CharField()
+    date_expirated = orm.DateTimeField()
 
     class Meta:
         database = db_sqlite
-
-
-usuarios = ApiAimoBridge(User)
-print(usuarios.last)
-user = UserSerializer(many=True).dump(usuarios.all)
-print(user)
