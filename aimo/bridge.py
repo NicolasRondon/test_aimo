@@ -73,3 +73,10 @@ class ApiAimoBridge(ApiAimoFacade):
         except Exception as e:
             raise e
 
+    def create_bulk(self,data):
+        database = self.model.__dict__["_meta"].__dict__['database']
+        with database.atomic():
+            for data_dict in data:
+                if 'password' in data_dict:
+                    data_dict['password'] = make_password(data_dict['password'])
+                self.model.create(**data_dict)
