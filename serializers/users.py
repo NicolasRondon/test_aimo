@@ -1,12 +1,10 @@
 from marshmallow import Schema, fields, validate
 
 
-class UserSerializer(Schema):
-    username = fields.Str()
+class UserSchema(Schema):
+    username = fields.Str(required=True)
     password = fields.Str(required = True,
-                          validate=[validate.Length(min=8,max=15)])
-    join_date = fields.DateTime()
+                          validate=[validate.Length(min=8,max=15)],
+                          load_only=True)
+    join_date = fields.DateTime(required=False)
 
-# user = User(name="Monty", email="monty@python.org")
-# schema = UserSchema()
-# result = schema.dump(user)
