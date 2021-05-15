@@ -24,6 +24,8 @@ class ApiAimoFacade(metaclass=abc.ABCMeta):
     def create(self, data):
         pass
 
+
+
 class ApiAimoBridge(ApiAimoFacade):
 
     def __init__(self, model):
@@ -69,7 +71,7 @@ class ApiAimoBridge(ApiAimoFacade):
                 data['password']= make_password(data['password'])
             model = self.model(**data)
             model.save()
-            return model.id
+            return model
         except Exception as e:
             raise e
 
