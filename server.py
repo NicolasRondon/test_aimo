@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from bottle import Bottle, run, route, request, hook, response, post
 from peewee import IntegrityError, DoesNotExist
 
-from aimo.auth import ApiAimoAuth
+from aimo.auth import ApiAimoAuth, create_token
 from aimo.bridge import ApiAimoBridge
 from connectors.sqlite import db_sqlite
 from models.users import User, UserToken
@@ -91,17 +91,8 @@ def login_user():
                         return data_response
                     except DoesNotExist:
                         user_token = ApiAimoBridge(UserToken)
-                        values_cretate_token = {
-                            "user_id": user_id,
-                            "token": auth.secret_key,
-                            "date_expirated": date_exp
-                        }
-                        user_token.create(values_cretate_token)
-                        auth.get_jwt = {
-                            "exp": values_cretate_token["date_expirated"],
-                            "token": values_cretate_token["token"]
-                        }
-                        data_response = {"token": auth.token}
+                        token = create_token(id_item=user_id,auth=auth, model=user_token, exp=date_exp)
+                        data_response = {"token": token}
                         return data_response
 
                 else:
@@ -132,18 +123,8 @@ def refresh_token():
             user_token = ApiAimoBridge(UserToken)
             date_exp = datetime.now() + timedelta(hours=9)
             token_info = UserToken.get(UserToken.token == data['token'])
-            values_cretate_token = {
-                "user_id": token_info._data['user'],
-                "token": auth.secret_key,
-                "date_expirated": date_exp
-            }
-            token_info.delete_instance()
-            user_token.create(values_cretate_token)
-            auth.get_jwt = {
-                "exp": values_cretate_token["date_expirated"],
-                "token": values_cretate_token["token"]
-            }
-            data_response = {"token": auth.token}
+            token = create_token(id_item=token_info._data['user'], auth=auth, model=user_token, exp=date_exp)
+            data_response = {"token": token}
             return data_response
         except DoesNotExist:
             response.status = 400
