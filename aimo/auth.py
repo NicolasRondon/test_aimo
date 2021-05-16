@@ -39,3 +39,17 @@ class ApiAimoAuth:
     def get_jwt(self, values):
         encode_jwt = self.__generate_jwt(values)
         self.token = f"Token {encode_jwt}"
+
+def create_token(auth,id_item, model, exp):
+    secret = auth.secret_key
+    model.create({
+        "user_id": id_item,
+        "token": secret,
+        "date_expirated": exp
+    })
+    auth.get_jwt = {
+        "exp": exp,
+        "token": secret
+    }
+    data_response = auth.token
+    return data_response
