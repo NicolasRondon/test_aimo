@@ -126,6 +126,12 @@ def refresh_token():
             user_token = ApiAimoBridge(UserToken)
             date_exp = datetime.now() + timedelta(hours=9)
             token_info = UserToken.get(UserToken.token == data['token'])
+            user_id = token_info._data['user']
+            try:
+                query = UserToken.delete().where(UserToken.user ==user_id)
+                query.execute()
+            except Exception as e:
+                raise e
             token = create_token(id_item=token_info._data['user'], auth=auth, model=user_token, exp=date_exp)
             data_response = {"token": token}
             return data_response
