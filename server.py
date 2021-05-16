@@ -146,25 +146,11 @@ def create_notes():
         response.status = 400
         return {"error": "Authorization not in headers"}
 
-    try:
-        auth = ApiAimoAuth()
-        data = auth.decode_jwt(headers)
-        if 'error' in data:
-            response.status = 400
-            return data
-
-        try:
-            token_info = UserToken.get(UserToken.token == data['token'])
-            user_id = token_info._data['user']
-        except DoesNotExist:
-            response.status = 400
-            return {"error": "Invalid Token"}
-    except DecodeError:
+    auth = ApiAimoAuth()
+    user_id = auth.check_token(UserToken)
+    if type(user_id) != int and 'error' in user_id:
         response.status = 400
-        return {"error": "Invalid Token"}
-    except Exception as e:
-        response.status = 400
-        raise e
+        return user_id
 
     data = request.json
     if not data:
@@ -182,8 +168,9 @@ def create_notes():
     try:
         note.create(serializer.data)
         response_data = NoteSchema(only=("title", "body", "created_at")).dump(serializer.data)
-        return  response_data.data
+        return response_data.data
     except Exception as e:
         raise e
+
 
 run(host='localhost', port=8000)
