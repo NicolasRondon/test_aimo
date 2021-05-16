@@ -128,7 +128,7 @@ def refresh_token():
             token_info = UserToken.get(UserToken.token == data['token'])
             user_id = token_info._data['user']
             try:
-                query = UserToken.delete().where(UserToken.user ==user_id)
+                query = UserToken.delete().where(UserToken.user == user_id)
                 print(query)
                 query.execute()
             except Exception as e:
@@ -173,18 +173,31 @@ def create_notes():
 
     note = ApiAimoBridge(Note)
     try:
-        new_note =note.create(serializer.data)
+        new_note = note.create(serializer.data)
 
-        response_data = NoteSchema(only=("id","title", "body", "created_at")).dump(new_note)
+        response_data = NoteSchema(only=("id", "title", "body", "created_at")).dump(new_note)
         return response_data.data
     except Exception as e:
         print(51591)
         raise e
 
+
 @put('/api/v1/notes/<id_note>')
 def edit_note(id_note):
-    print("lll")
-    print(id_note)
+    try:
+        headers = request.headers['Authorization']
+    except KeyError:
+        response.status = 400
+        return {"error": "Authorization not in headers"}
+    auth = ApiAimoAuth()
+    user_id = auth.check_token(UserToken)
+    if type(user_id) != int and 'error' in user_id:
+        response.status = 400
+        return user_id
+
+    note = Note.select().where( (Note.id == id_note) & (Note.author_id == user_id)).get()
+    print(note)
     return
+
 
 run(host='localhost', port=8000)
