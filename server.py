@@ -76,12 +76,14 @@ def login_user():
                 auth = ApiAimoAuth()
                 username = serializer.data['username']
                 password_raw = serializer.data['password']
-                user = User.get(User.username == username)
+                try:
+                    user = User.get(User.username == username)
+                except DoesNotExist:
+                    return {"error": "The credentials are not valid"}
                 user_id = user._data['id']
                 user_pasword = user._data['password']
                 is_password_correct = check_password(password_raw, user_pasword)
                 date_exp = datetime.now() + timedelta(hours=9)
-                print(777, user_id)
                 if is_password_correct:
                     try:
                         user_token = UserToken.get(UserToken.user_id == user_id)
