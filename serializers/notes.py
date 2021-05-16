@@ -13,3 +13,8 @@ class NoteSchema(Schema):
     created_at = MyDateTimeField()
     edited_at = MyDateTimeField()
 
+
+class NoteEditSchema(Schema):
+    title = fields.Str()
+    body = fields.Str()
+    edited_at = MyDateTimeField()
