@@ -1,6 +1,8 @@
 import binascii
 import os
 import jwt
+from bottle import response, request
+from peewee import DoesNotExist
 
 
 class ApiAimoAuth:
@@ -11,6 +13,34 @@ class ApiAimoAuth:
     @property
     def secret_key(self):
         return
+
+    @classmethod
+    def check_token(cls, user_model):
+        try:
+            headers = request.headers['Authorization']
+        except KeyError:
+            response.status = 400
+            return {"error": "Authorization not in headers"}
+
+        try:
+            data = cls.decode_jwt(headers)
+            if 'error' in data:
+                response.status = 400
+                return data
+
+            try:
+                token_info = user_model.get(user_model.token == data['token'])
+                user_id = token_info._data['user']
+            except DoesNotExist:
+                response.status = 400
+                return {"error": "Invalid Token"}
+        except jwt.DecodeError:
+            response.status = 400
+            return {"error": "Invalid Token"}
+        except Exception as e:
+            response.status = 400
+            raise e
+        return user_id
 
     @secret_key.getter
     def secret_key(self):
