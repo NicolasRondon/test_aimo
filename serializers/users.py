@@ -8,3 +8,7 @@ class UserSchema(Schema):
                           load_only=True)
     join_date = fields.DateTime(required=False)
 
+class UserTokenSchema(Schema):
+    user = fields.Nested(UserSchema)
+    token = fields.String()
+    date_expirated = fields.DateTime()
