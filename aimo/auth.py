@@ -22,7 +22,6 @@ class ApiAimoAuth:
 
     @classmethod
     def decode_jwt(cls, jwt_encode, refresh= False):
-        print(refresh,567)
         if refresh:
             token = jwt_encode.split("Token ")[-1]
             decode = jwt.decode(token, "secret", False,algorithms=["HS256"])
