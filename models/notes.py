@@ -10,9 +10,8 @@ class Note(orm.Model):
     title = orm.CharField(max_length=160)
     body = orm.TextField()
     created_at = orm.DateTimeField()
-    edited_at = orm.DateTimeField()
+    edited_at = orm.DateTimeField(null=True)
 
     class Meta:
         database = db_sqlite
-
 

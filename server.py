@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
 
 from bottle import Bottle, run, route, request, hook, response, post
+from jwt import DecodeError
 from peewee import IntegrityError, DoesNotExist
 
 from aimo.auth import ApiAimoAuth, create_token
 from aimo.bridge import ApiAimoBridge
 from connectors.sqlite import db_sqlite
+from models.notes import Note
 from models.users import User, UserToken
+from serializers.notes import NoteSchema
 from serializers.users import UserSchema
 from utils import check_password
 
@@ -91,7 +94,7 @@ def login_user():
                         return data_response
                     except DoesNotExist:
                         user_token = ApiAimoBridge(UserToken)
-                        token = create_token(id_item=user_id,auth=auth, model=user_token, exp=date_exp)
+                        token = create_token(id_item=user_id, auth=auth, model=user_token, exp=date_exp)
                         data_response = {"token": token}
                         return data_response
 
@@ -118,7 +121,7 @@ def refresh_token():
         return {"error": "Authorization not in headers"}
     try:
         auth = ApiAimoAuth()
-        data = auth.decode_jwt(headers)
+        data = auth.decode_jwt(headers, refresh=True)
         try:
             user_token = ApiAimoBridge(UserToken)
             date_exp = datetime.now() + timedelta(hours=9)
@@ -134,5 +137,53 @@ def refresh_token():
     except Exception as e:
         raise e
 
+
+@post('/api/v1/notes')
+def create_notes():
+    try:
+        headers = request.headers['Authorization']
+    except KeyError:
+        response.status = 400
+        return {"error": "Authorization not in headers"}
+
+    try:
+        auth = ApiAimoAuth()
+        data = auth.decode_jwt(headers)
+        if 'error' in data:
+            response.status = 400
+            return data
+
+        try:
+            token_info = UserToken.get(UserToken.token == data['token'])
+            user_id = token_info._data['user']
+        except DoesNotExist:
+            response.status = 400
+            return {"error": "Invalid Token"}
+    except DecodeError:
+        response.status = 400
+        return {"error": "Invalid Token"}
+    except Exception as e:
+        response.status = 400
+        raise e
+
+    data = request.json
+    if not data:
+        response.status = 400
+        return {"error": "Body is empty"}
+    data['author'] = user_id
+    data['created_at'] = datetime.now()
+    serializer = NoteSchema().load(data)
+
+    if serializer.errors:
+        response.status = 400
+        return {"error": serializer.errors}
+
+    note = ApiAimoBridge(Note)
+    try:
+        note.create(serializer.data)
+        response_data = NoteSchema(only=("title", "body", "created_at")).dump(serializer.data)
+        return  response_data.data
+    except Exception as e:
+        raise e
 
 run(host='localhost', port=8000)
