@@ -118,4 +118,40 @@ def login_user():
         raise e
 
 
+@post('/api/v1/users/refresh')
+def refresh_token():
+    try:
+        headers = request.headers['Authorization']
+    except KeyError:
+        response.status = 400
+        return {"error": "Authorization not in headers"}
+    try:
+        auth = ApiAimoAuth()
+        data = auth.decode_jwt(headers)
+        try:
+            user_token = ApiAimoBridge(UserToken)
+            date_exp = datetime.now() + timedelta(hours=9)
+            token_info = UserToken.get(UserToken.token == data['token'])
+            values_cretate_token = {
+                "user_id": token_info._data['user'],
+                "token": auth.secret_key,
+                "date_expirated": date_exp
+            }
+            token_info.delete_instance()
+            user_token.create(values_cretate_token)
+            auth.get_jwt = {
+                "exp": values_cretate_token["date_expirated"],
+                "token": values_cretate_token["token"]
+            }
+            data_response = {"token": auth.token}
+            return data_response
+        except DoesNotExist:
+            response.status = 400
+            return {"error": "Invalid Token"}
+
+
+    except Exception as e:
+        raise e
+
+
 run(host='localhost', port=8000)
