@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from bottle import Bottle, run, route, request, hook, response, post, put
+from bottle import Bottle, run, route, request, hook, response, post, put, get
 from jwt import DecodeError
 from peewee import IntegrityError, DoesNotExist
 
@@ -9,7 +9,7 @@ from aimo.bridge import ApiAimoBridge
 from connectors.sqlite import db_sqlite
 from models.notes import Note
 from models.users import User, UserToken
-from serializers.notes import NoteSchema
+from serializers.notes import NoteSchema,  GetNoteSchema
 from serializers.users import UserSchema
 from utils import check_password
 
@@ -181,23 +181,29 @@ def create_notes():
         print(51591)
         raise e
 
-
-@put('/api/v1/notes/<id_note>')
-def edit_note(id_note):
+@get('/api/v1/notes')
+def list_notes():
     try:
         headers = request.headers['Authorization']
     except KeyError:
         response.status = 400
         return {"error": "Authorization not in headers"}
+
     auth = ApiAimoAuth()
     user_id = auth.check_token(UserToken)
     if type(user_id) != int and 'error' in user_id:
         response.status = 400
         return user_id
 
-    note = Note.select().where( (Note.id == id_note) & (Note.author_id == user_id)).get()
-    print(note)
-    return
+    notes = ApiAimoBridge(Note)
+    print(user_id)
+    notes_list =notes.wheres((Note.author == user_id))
+    serializer = GetNoteSchema(many=True).dumps(notes_list)
+    if serializer.errors:
+        response.status = 400
+        return {"error": serializer.errors}
+    print(serializer.data)
+    return serializer.data
 
 
 run(host='localhost', port=8000)
