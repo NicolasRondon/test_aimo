@@ -1,12 +1,14 @@
-from marshmallow import Schema, fields, validate
+from datetime import datetime
 
-from serializers.users import UserSchema
+from marshmallow import Schema, fields
+
+from serializers.fields import MyDateTimeField
 
 
 class NoteSchema(Schema):
-    author = fields.Nested(UserSchema)
-    title = fields.Str()
-    body = fields.Str()
-    created_at = fields.DateTime()
-    edited_at = fields.DateTime()
+    author = fields.Int()
+    title = fields.Str(required=True)
+    body = fields.Str(required=True)
+    created_at = MyDateTimeField()
+    edited_at = MyDateTimeField()
 
