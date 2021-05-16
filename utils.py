@@ -14,6 +14,5 @@ def make_password(raw_password: str) -> str:
 
 
 def check_password(raw_password: str, enc_password) -> bool:
-    print(enc_password, 888)
     salt, hsh = enc_password.split('$', 1)
     return hsh == get_hexdigest(salt, raw_password)
