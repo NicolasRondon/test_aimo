@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from bottle import Bottle, run, route, request, hook, response, post
+from bottle import Bottle, run, route, request, hook, response, post, put
 from jwt import DecodeError
 from peewee import IntegrityError, DoesNotExist
 
@@ -77,14 +77,14 @@ def login_user():
                 username = serializer.data['username']
                 password_raw = serializer.data['password']
                 user = User.get(User.username == username)
-                user_id = user.id
-                user_pasword = user.password
+                user_id = user._data['id']
+                user_pasword = user._data['password']
                 is_password_correct = check_password(password_raw, user_pasword)
                 date_exp = datetime.now() + timedelta(hours=9)
+                print(777, user_id)
                 if is_password_correct:
-                    # TODO creacion del token
                     try:
-                        user_token = UserToken(id=user_id).get()
+                        user_token = UserToken.get(UserToken.user_id == user_id)
                         data_token = user_token._data
                         auth.get_jwt = {
                             "exp": data_token['date_expirated'],
@@ -129,6 +129,7 @@ def refresh_token():
             user_id = token_info._data['user']
             try:
                 query = UserToken.delete().where(UserToken.user ==user_id)
+                print(query)
                 query.execute()
             except Exception as e:
                 raise e
@@ -157,7 +158,7 @@ def create_notes():
     if type(user_id) != int and 'error' in user_id:
         response.status = 400
         return user_id
-
+    print(user_id)
     data = request.json
     if not data:
         response.status = 400
@@ -172,11 +173,18 @@ def create_notes():
 
     note = ApiAimoBridge(Note)
     try:
-        note.create(serializer.data)
-        response_data = NoteSchema(only=("title", "body", "created_at")).dump(serializer.data)
+        new_note =note.create(serializer.data)
+
+        response_data = NoteSchema(only=("id","title", "body", "created_at")).dump(new_note)
         return response_data.data
     except Exception as e:
+        print(51591)
         raise e
 
+@put('/api/v1/notes/<id_note>')
+def edit_note(id_note):
+    print("lll")
+    print(id_note)
+    return
 
 run(host='localhost', port=8000)
