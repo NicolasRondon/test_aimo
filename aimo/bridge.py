@@ -1,7 +1,7 @@
 import abc
-from typing import List
+from typing import List, Tuple
 
-from peewee import fn
+from peewee import fn, DoesNotExist
 
 from utils import make_password
 
@@ -25,13 +25,10 @@ class ApiAimoFacade(metaclass=abc.ABCMeta):
         pass
 
 
-
 class ApiAimoBridge(ApiAimoFacade):
 
     def __init__(self, model):
         self.model = model
-
-
 
     @property
     def all(self):
@@ -46,6 +43,16 @@ class ApiAimoBridge(ApiAimoFacade):
         model = self.model
         items = model.select().where(model.id << values)
         return items
+
+    def wheres(self, wheres):
+        model = self.model
+        try:
+            items = model.select().where(wheres)
+            return items
+        except DoesNotExist:
+            return {"error": "Not Found"}
+        except  Exception as e:
+            raise e
 
     @property
     def last(self):
@@ -64,14 +71,14 @@ class ApiAimoBridge(ApiAimoFacade):
     def create(self, data):
         try:
             if 'password' in data:
-                data['password']= make_password(data['password'])
+                data['password'] = make_password(data['password'])
             model = self.model(**data)
             model.save()
             return model
         except Exception as e:
             raise e
 
-    def create_bulk(self,data):
+    def create_bulk(self, data):
         database = self.model.__dict__["_meta"].__dict__['database']
         with database.atomic():
             for data_dict in data:

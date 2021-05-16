@@ -14,7 +14,11 @@ class NoteSchema(Schema):
     edited_at = MyDateTimeField()
 
 
-class NoteEditSchema(Schema):
-    title = fields.Str()
-    body = fields.Str()
+class GetNoteSchema(Schema):
+    author = fields.Nested(UserSchema)
+    title = fields.Str(required=True)
+    body = fields.Str(required=True)
+    created_at = MyDateTimeField()
     edited_at = MyDateTimeField()
+
+

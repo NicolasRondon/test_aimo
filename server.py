@@ -196,13 +196,11 @@ def list_notes():
         return user_id
 
     notes = ApiAimoBridge(Note)
-    print(user_id)
     notes_list =notes.wheres((Note.author == user_id))
     serializer = GetNoteSchema(many=True).dumps(notes_list)
     if serializer.errors:
         response.status = 400
         return {"error": serializer.errors}
-    print(serializer.data)
     return serializer.data
 
 
