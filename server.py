@@ -199,11 +199,11 @@ def list_notes():
 
     notes = ApiAimoBridge(Note)
     notes_list =notes.wheres((Note.author == user_id))
-    serializer = GetNoteSchema(many=True).dumps(notes_list)
+    serializer = GetNoteSchema(many=True).dump(notes_list)
     if serializer.errors:
         response.status = 400
         return {"error": serializer.errors}
-    return serializer.data
+    return {"notes":serializer.data}
 
 
 run(host='localhost', port=8000)

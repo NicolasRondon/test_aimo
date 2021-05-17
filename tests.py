@@ -16,8 +16,11 @@ class TestAimoApiBuilder():
         self.token = None
 
     def clean_database(self):
+        try:
+            os.remove('notes.db')
+        except  Exception as e:
+            pass
         db_sqlite.connect()
-        db_sqlite.drop_tables([User, UserToken, Note])
         db_sqlite.create_tables([User, UserToken, Note])
         db_sqlite.close()
         return
@@ -68,7 +71,7 @@ class TestAimoApiBuilder():
         url = f"{self.base}/api/v1/notes"
         note = requests.get(url=url, headers={"Authorization": self.token})
         note_info = note.json()
-        assert 'title' in note_info[0]
+        assert 'title' in note_info['notes'][0]
 
 
 class TestDirector:
