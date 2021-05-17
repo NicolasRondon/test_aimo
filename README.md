@@ -3,7 +3,7 @@
 Para cumplir con todas las funcionalidades requeridas tome la decisión
 de empezar con un modelo entidad relacion donde un Usuario esta relacionado
 con una Nota y también un Usuario se relacion con un token.
-![Modelo](entidad-relacion.png)
+![Modelo](https://raw.githubusercontent.com/NicolasRondon/test_aimo/main/entidad-relacion.PNG)
 En la funcionalidad de autenticación se solicito usar el paquete JWT para
 identificar el usuario, tome la decisión de considerar el **ID** del usuario
 como un dato sensible, por lo cual en ningún momento es expuesto en la API,
@@ -23,7 +23,7 @@ Mi flujo de trabajo en git fue de la siguiente manera, por cada funcionalidad a 
 agregue una rama, cuando el trabajo de esa rama finalizaba se hace merge con la rama develop,
 para luego continuar hacia la rama test, ejecutar los test y finalmente migrar a la rama master
 
-![GitFlow](gitflow.png)
+![GitFlow](https://raw.githubusercontent.com/NicolasRondon/test_aimo/main/gitflow.PNG)
 
 
 ## Documentacion api
