@@ -18,9 +18,6 @@ _allow_methods = 'PUT, GET, POST, DELETE, OPTIONS'
 _allow_headers = 'Authorization, Origin, Accept, Content-Type, X-Requested-With'
 
 
-@hook('before_request')
-def db_connect():
-    db_sqlite.connect()
 
 
 @hook('after_request')
@@ -28,9 +25,15 @@ def enable_cors():
     if not db_sqlite.is_closed():
         db_sqlite.close()
 
-    response.headers['Access-Control-Allow-Origin'] = _allow_origin
-    response.headers['Access-Control-Allow-Methods'] = _allow_methods
-    response.headers['Access-Control-Allow-Headers'] = _allow_headers
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Origin, Accept, Content-Type, X-Requested-With'
+    return response.headers
+
+@hook('before_request')
+def db_connect():
+    db_sqlite.connect()
+
 
 
 app = Bottle()
@@ -44,7 +47,7 @@ def create_users():
     try:
         data = request.json
         serializer = UserSchema().load(data)
-
+        print(data)
         if serializer.errors:
             response.status = 400
             return {"error": serializer.errors}
@@ -61,10 +64,11 @@ def create_users():
         raise e
 
 
-@post('/api/v1/users/login')
+@route('/api/v1/users/login', method=[ 'POST','OPTIONS'])
 def login_user():
     try:
         data = request.json
+        print(data,4448)
         serializer = UserSchema().load(data)
 
         if serializer.errors:
