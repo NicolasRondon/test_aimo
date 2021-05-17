@@ -69,4 +69,4 @@ Al momento de realizar el api, me enfrente a diferentes factores, uno fue salir 
 al usar herramientas que no conocia, por lo mismo realizar tests en bottle fue un poco dificil para mi
 y seguramente hay mejores soluciones a la que yo decidi usar, de tener que correr el server y luego si 
 ejecutar los test, otro reto  es la integración del back con el front debido a mi falta de practica 
-en tecnologías javascript y el desconocimiento de la herramienta bottle tengo incovenientes en los cors.
+en tecnologías javascript y el desconocimiento de la herramienta bottle tengo incovenientes en los cors, los cuales me impidieron avanzar.
